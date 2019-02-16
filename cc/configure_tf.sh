@@ -2,7 +2,11 @@
 
 set -e
 
-######## PARAMETERS ################
+######## PARAMETERS #########################################
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dst_dir="${script_dir}/tensorflow"
+tmp_dir="/tmp/build_tf"
+tmp_pkg_dir="/tmp/tensorflow_pkg"
 
 tf_commit_tag="v1.13.0-rc2"
 
@@ -24,30 +28,23 @@ export TF_NEED_OPENCL_SYCL=0
 export TF_NEED_MPI=0
 export TF_SET_ANDROID_WORKSPACE=0
 
-####
+#############################################################
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-dst_dir="${script_dir}/tensorflow"
-tmp_dir="/tmp/build_tf"
-tmp_pkg_dir="/tmp/tensorflow_pkg"
+rm -rfd ${tmp_dir}
+rm -rfd ${tmp_pkg_dir}
+mkdir -p ${tmp_dir}
 
-# rm -rfd ${tmp_dir}
-# rm -rfd ${tmp_pkg_dir}
-# mkdir -p ${tmp_dir}
+rm -rf ${dst_dir}/*
+mkdir -p ${dst_dir}
 
-# rm -rf ${dst_dir}/*
-# mkdir -p ${dst_dir}
-
-# echo "Cloning tensorflow to ${tmp_dir}"
-# git clone https://github.com/tensorflow/tensorflow "${tmp_dir}"
+echo "Cloning tensorflow to ${tmp_dir}"
+git clone https://github.com/tensorflow/tensorflow "${tmp_dir}"
 
 pushd "${tmp_dir}"
 
-# echo "Checking out ${tf_commit_tag}"
-# git checkout "${tf_commit_tag}"
+echo "Checking out ${tf_commit_tag}"
+git checkout "${tf_commit_tag}"
 
-# Run the TensorFlow configuration script, setting reasonable values for most
-# of the options.
 echo "Configuring tensorflow"
 ./configure
 
