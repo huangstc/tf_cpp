@@ -25,6 +25,7 @@ chmod +x cc/configure_tf.sh \
 ```
 
 ### Generate TFRecords from C++
+Download [the MNIST dataset](http://yann.lecun.com/exdb/mnist/), extract the files to a work directory, e.g. `/tmp/mnist`.
 ```bash
 work_dir=/tmp/mnist
 mkdir -p ${work_dir}
@@ -51,7 +52,7 @@ python mnist_nn.py \
   --input_layer_name=mnist
 ```
 
-### Convert Keras Model to TensorFlow Format
+### Convert the Keras Model to TensorFlow Format
 ```bash
 python keras_to_tensorflow.py \
   --input_model=${work_dir}/my_model.h5 \
