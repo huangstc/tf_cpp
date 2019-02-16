@@ -1,5 +1,23 @@
 # tf_cpp
 
+This toy project demonstrates:
+  * Use TensorFlow's C++ API to generate training and test data sets, in TFRecord format;
+  * Load the data sets in Python with TFRecordDataset, train a model with Keras and export the model to a H5 file.
+  * Convert the model in .H5 to Tensorflow's GraphDef.
+  * Load the model and run inference with TensorFlow's C++ API.
+  
+The demo is based on the works in:
+  * [minigo](https://github.com/tensorflow/minigo/blob/master/README.md): for configuring TensorFlow in Bazel. ./cc/configure.sh is copied from [the project](https://github.com/tensorflow/minigo/blob/master/cc/configure_tensorflow.sh) with minor modifications;
+  * [keras_to_tensorflow](https://github.com/amir-abdi/keras_to_tensorflow/blob/master/README.md): for converting a Keras model to a TensorFlow model. ./keras_to_tensorflow.py is copied from [the project](https://github.com/amir-abdi/keras_to_tensorflow/blob/master/keras_to_tensorflow.py) with minor modifications.
+  * [MNIST](http://yann.lecun.com/exdb/mnist/): training and test datasets are generated from the MNIST database.
+
+## Run the Demo
+
+To run the demo, you need to install the following:
+* Python
+* TensorFlow
+* Bazel
+
 ### Configure and Build Tensorflow
 ```bash
 chmod +x cc/configure_tf.sh \
@@ -24,7 +42,7 @@ bazel-bin/cc/gen_dataset \
   --records=${work_dir}/mnist_test.rio
 ```
 
-### Train
+### Train with Keras
 ```bash
 python mnist_nn.py \
   --train_records=${work_dir}/mnist_train.rio \
@@ -33,7 +51,7 @@ python mnist_nn.py \
   --input_layer_name=mnist
 ```
 
-### Convert
+### Convert Keras Model to TensorFlow Format
 ```bash
 python keras_to_tensorflow.py \
   --input_model=${work_dir}/my_model.h5 \
@@ -41,7 +59,7 @@ python keras_to_tensorflow.py \
   --output_nodes_prefix=mnist_output/
 ```
 
-### Run
+### Run the Model in C++
 ```bash
 bazel build -c opt cc:run_model
 
