@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dens
 flags.DEFINE_string('train_records', None, 'Path to the training dataset.')
 flags.DEFINE_string('test_records', None, 'Path to the test dataset.')
 flags.DEFINE_string('trained_model', None, 'Path to the saved model, ending with .h5')
-flags.DEFINE_string('input_layer_name', 'mnist', 'Name the input layer.')
+flags.DEFINE_string('first_layer_name', 'mnist', 'Name the first layer.')
 flags.DEFINE_bool('use_cnn', False, "Use CNN if true.")
 
 FLAGS = flags.FLAGS
@@ -50,7 +50,7 @@ def create_model():
     if FLAGS.use_cnn:
         model = keras.Sequential()
         model.add(Conv2D(filters=32, kernel_size=(3,3), activation="relu",
-                         input_shape=shape, name=FLAGS.input_layer_name))
+                         input_shape=shape, name=FLAGS.first_layer_name))
         model.add(Conv2D(64, (3, 3), activation="relu"))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.5))
@@ -63,7 +63,7 @@ def create_model():
                       metrics=["accuracy"])
     else:
         model = keras.Sequential([
-            Flatten(input_shape=shape, name=FLAGS.input_layer_name),
+            Flatten(input_shape=shape, name=FLAGS.first_layer_name),
             Dense(100, activation=tf.nn.relu),
             Dense(NUM_CLASSES, activation=tf.nn.softmax)
         ])
@@ -91,9 +91,9 @@ def main(argv):
     print("test loss: %f" % loss)
     print("test accuracy: %f" % acc)
 
-    print("The input layer name is %s" % FLAGS.input_layer_name)
-    print("Model will be save to %s" % FLAGS.trained_model)
     model.save(FLAGS.trained_model)
+    print("The input layer name is %s_input" % FLAGS.first_layer_name)
+    print("Model is saved to %s" % FLAGS.trained_model)
 
 
 if __name__ == '__main__':

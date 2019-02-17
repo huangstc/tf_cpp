@@ -48,9 +48,11 @@ bazel-bin/cc/gen_dataset \
 python mnist_nn.py \
   --train_records=${work_dir}/mnist_train.rio \
   --test_records=${work_dir}/mnist_test.rio \
+  --use_cnn={true|false} \
   --trained_model=${work_dir}/my_model.h5 \
-  --input_layer_name=mnist
+  --first_layer_name=mnist
 ```
+Choose a unique value for the flag `--first_layer_name`. The input node's name will be "${first_layer_name}_input" and run_model.cc needs to know this name.
 
 ### Convert the Keras Model to TensorFlow Format
 ```bash
@@ -59,6 +61,7 @@ python keras_to_tensorflow.py \
   --output_model=${work_dir}/my_model.pb \
   --output_nodes_prefix=mnist_output/
 ```
+If the model has only one output, the final output node's name will be "${output_nodes_prefix}0$" and run_model.cc will use this name.
 
 ### Run the Model in C++
 ```bash
@@ -69,4 +72,10 @@ bazel-bin/cc/run_model \
   --input_layer_name=mnist_input \
   --output_layer_name=mnist_output/0 \
   --v=1
+```
+
+If the program complains about any compatibility issue, try to re-install tensorflow with the package built from `cc/configure_tf.sh`.
+```bash
+pip uninstall ${your-tensorflow-version}
+pip install ${tmp_pkg_dir}/tensorflow-{your-version-tags}.whl
 ```
