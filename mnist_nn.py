@@ -3,11 +3,13 @@ import tensorflow as tf
 
 from absl import app, flags
 from tensorflow import keras
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense
 
 flags.DEFINE_string('train_records', None, 'Path to the training dataset.')
 flags.DEFINE_string('test_records', None, 'Path to the test dataset.')
 flags.DEFINE_string('trained_model', None, 'Path to the saved model, ending with .h5')
 flags.DEFINE_string('input_layer_name', 'mnist', 'Name the input layer.')
+flags.DEFINE_bool('use_cnn', False, "Use CNN if true.")
 
 FLAGS = flags.FLAGS
 
@@ -20,6 +22,7 @@ SHUFFLE_BUFFER = 10000
 BATCH_SIZE = 60
 STEPS_PER_TRAIN_EPOCH = 1000
 NUM_CLASSES = 10
+
 
 # Transforms example_proto into a pair of a scalar integer and a float 2d array,
 # representing an image and its label, respectively.
@@ -41,6 +44,37 @@ def create_dataset(files):
     return dataset
 
 
+def create_model():
+    model = None
+    shape = (IMAGE_WIDTH, IMAGE_WIDTH, 1)
+    if FLAGS.use_cnn:
+        model = keras.Sequential()
+        model.add(Conv2D(filters=32, kernel_size=(3,3), activation="relu",
+                         input_shape=shape, name=FLAGS.input_layer_name))
+        model.add(Conv2D(64, (3, 3), activation="relu"))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.5))
+        model.add(Flatten())
+        model.add(Dense(64, activation="relu"))
+        model.add(Dropout(0.5))
+        model.add(Dense(NUM_CLASSES, activation="softmax"))
+        model.compile(loss="sparse_categorical_crossentropy",
+                      optimizer="adam",
+                      metrics=["accuracy"])
+    else:
+        model = keras.Sequential([
+            Flatten(input_shape=shape, name=FLAGS.input_layer_name),
+            Dense(100, activation=tf.nn.relu),
+            Dense(NUM_CLASSES, activation=tf.nn.softmax)
+        ])
+        model.compile(loss="sparse_categorical_crossentropy",
+                      optimizer="adam",
+                      metrics=["accuracy"])
+
+    print(model.summary())
+    return model
+
+
 def main(argv):
     del argv  # Unused
     flags.mark_flag_as_required('train_records')
@@ -51,20 +85,9 @@ def main(argv):
     train_dataset = train_dataset.shuffle(SHUFFLE_BUFFER)
     test_dataset = create_dataset([FLAGS.test_records])
 
-    model = keras.Sequential([
-        keras.layers.Flatten(input_shape=(IMAGE_WIDTH, IMAGE_HEIGHT, 1),
-                             name=FLAGS.input_layer_name),
-        keras.layers.Dense(100, activation=tf.nn.relu),
-        keras.layers.Dense(10, activation=tf.nn.softmax)
-    ])
-    model.compile(optimizer="adam",
-                  loss="sparse_categorical_crossentropy",
-                  metrics=["accuracy"])
-    print(model.summary())
-
+    model = create_model()
     model.fit(train_dataset, epochs=10, steps_per_epoch=STEPS_PER_TRAIN_EPOCH)
-
-    loss, acc = model.evaluate(test_dataset, steps=94)
+    loss, acc = model.evaluate(test_dataset, steps=(int)(10000/BATCH_SIZE))
     print("test loss: %f" % loss)
     print("test accuracy: %f" % acc)
 

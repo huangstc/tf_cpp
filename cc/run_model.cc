@@ -32,6 +32,9 @@ using std::string;
 std::unique_ptr<tf::Session> LoadGraph(const std::string& graph_file_name) {
   tf::GraphDef graph_def;
   TF_CHECK_OK(ReadBinaryProto(tf::Env::Default(), graph_file_name, &graph_def));
+  for (const auto& node : graph_def.node()) {
+    LOG(INFO) << "Node:" << node.name() << " op:" << node.op();
+  }
   VLOG(1) << graph_def.DebugString();
   auto sess = absl::WrapUnique<tf::Session>(
       tf::NewSession(tf::SessionOptions()));
@@ -63,7 +66,7 @@ int main(int argc, char* argv[]) {
   std::vector<tf::Tensor> outputs;
   TF_CHECK_OK(sess->Run({{FLAGS_input_layer_name, input}},
                          {FLAGS_output_layer_name}, {}, &outputs));
-                         
+
   tf::TensorProto proto;
   outputs[0].AsProtoField(&proto);
   LOG(INFO) << proto.DebugString();
